@@ -56,12 +56,7 @@ ISR(ADC_vect)
 {
 	// Dummy, for ADC Sleep
 }
-/*
-ISR(TIMER2_COMPA_vect)	// TIMER0 compare 8 bit
-{
-	PORTB ^= 0x8;
-}
-*/
+
 ISR(TIMER1_COMPA_vect)	// TIMER1 compare 16 bit
 {
 	PORTC = 0;
@@ -127,15 +122,6 @@ int main(void)
 	
 	// Timers Init
 	// TIMER0 used by delay() or similar
-	
-	/*	To delete, just playing
-	OCR2A  = compair_match_register;
-	TCCR2A = (1 << WGM21);				// CTC mode
-	TCCR2B = (1 << CS22) | (1 << CS20);	// 1024 prescaler
-	TIMSK2 = (1 << OCIE2A);				// enable timer compare interrupt
-	TCNT2  = 0;
-	*/
-	
 	OCR1A  = compair_match_register;
 	TCCR1A = 0;
 	TCCR1B = (1 << WGM12) | (1 << CS12) | (1 << CS10);	// CTC mode & 1024 prescaler
@@ -152,13 +138,12 @@ int main(void)
 	{
 		TIMSK1 = 0;								// Temporarily disable timer1
 		
-		//PORTB = 0x3E;							// Clear Bar Leds *** Test
 		PORTC = 1 << checking_battery;			// Add Charging Power
 		PORTD = ~(1 << (checking_battery + 2));	// Show Battery Number Led
 		
 		// Check the Battery voltage
 		adc_sum = 0;
-		for (i = 0; i < 16; i++)			// Get multiple samples to filter out some noise
+		for (i = 0; i < 16; i++)				// Get multiple samples to filter out some noise
 		{
 			ADMUX   = (3 << REFS0) | (checking_battery + 4);	// AREF = Internal 1.1v (0.99v) & Channel
 			ADCSRA |= (1 << ADSC);				// Start single conversion
@@ -179,6 +164,7 @@ int main(void)
 		if (adc_sum >= 0x3FB)	// No Battery / Open Circuit
 		{
 			fully_charged &= ~(1 << checking_battery);			// Reset the battery flag
+			PORTB = led1_bar | led2_bar | led3_bar | led4_bar | led5_bar;		// Clear the Bar Leds
 			//PORTB &= ~led3_bar;	// *** Test
 			//_delay_ms(250);		// *** Test
 		}
