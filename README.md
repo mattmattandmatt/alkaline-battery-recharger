@@ -1,4 +1,4 @@
-# alkaline-battery-recharger
+# Alkaline Battery Recharger
 Recharge (non-rechargeable) Alkaline Batteries with junk around the house and an Atmel microcontroller<br>
 
 It is best to take this project with a pinch of salt, because it is just for a laugh... A working laugh.<br>
