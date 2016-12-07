@@ -31,13 +31,14 @@
 #define led2_bar (unsigned char) 0x4	// Red
 #define led1_bar (unsigned char) 0x2	// Red
 
-#define volt_1700 0x37E	// Just reference to my setup
+#define volt_1700 0x37E	// Just reference to my setup, because of the resistors I used
 #define volt_1600 0x344
 #define volt_1500 0x311	// Top Green Led
 #define volt_1325 0x2B6	// ...
 #define volt_1150 0x25B	// ...
 #define volt_0975 0x201	// ...
 #define volt_0800 0x1A6	// Bottom Red Led
+#define volt_0000 0x20	// Zero volts for no battery, Highest level including noise
 
 
 unsigned char battery_charging = 0;	// 4 bits for which batteries are charging (sending the pulses)
@@ -138,7 +139,7 @@ int main(void)
 	{
 		TIMSK1 = 0;								// Temporarily disable timer1
 		
-		PORTC = 1 << checking_battery;			// Add Charging Power
+		PORTC = 0;								// Remove Charging Power (should let it settle really)
 		PORTD = ~(1 << (checking_battery + 2));	// Show Battery Number Led
 		
 		// Check the Battery voltage
@@ -153,15 +154,15 @@ int main(void)
 		}
 		adc_sum = adc_sum >> 4;
 		
+		TIMSK1 = (1 << OCIE1A);					// Re-enable timer1
 		
-		PORTC  = 0;				// Turn off the power(s), let the timer do its thing
-		TIMSK1 = (1 << OCIE1A);	// Re-enable timer1
+		
 		
 		
 		
 		battery_charging &= ~(1 << checking_battery);			// Reset Charging Bit
 		
-		if (adc_sum >= 0x3FB)	// No Battery / Open Circuit
+		if (adc_sum <= volt_0000)		// No Battery / Almost Close Circuit
 		{
 			fully_charged &= ~(1 << checking_battery);			// Reset the battery flag
 			PORTB = led1_bar | led2_bar | led3_bar | led4_bar | led5_bar;		// Clear the Bar Leds
