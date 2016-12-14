@@ -1,7 +1,8 @@
 /*
  * Battery_Charger.c
  * Created: 29/11/2016
- * Author: PerpendicularTriangle
+ * Author:  PerpendicularTriangle
+ * Version: 0.3
  */
 
 // Set to 1 if using a 16Mhz External Crystal, set to 0 if using the 1Mhz Internal Oscillator
@@ -57,7 +58,6 @@ ISR(ADC_vect)
 {
 	// Dummy, for ADC Sleep
 }
-
 ISR(TIMER1_COMPA_vect)	// TIMER1 compare 16 bit
 {
 	PORTC = 0;
@@ -138,9 +138,7 @@ int main(void)
 	while(1)
 	{
 		TIMSK1 = 0;								// Temporarily disable timer1
-		
 		PORTC = 0;								// Remove Charging Power (should let it settle really)
-		PORTD = ~(1 << (checking_battery + 2));	// Show Battery Number Led
 		
 		// Check the Battery voltage
 		adc_sum = 0;
@@ -158,14 +156,16 @@ int main(void)
 		
 		
 		
+		PORTD = ~(1 << (checking_battery + 2));							// Show Battery Number Led
+		PORTB = led1_bar | led2_bar | led3_bar | led4_bar | led5_bar;	// Clear the Bar Leds
+		
+		battery_charging &= ~(1 << checking_battery);					// Reset Charging Bit
 		
 		
-		battery_charging &= ~(1 << checking_battery);			// Reset Charging Bit
 		
 		if (adc_sum <= volt_0000)		// No Battery / Almost Close Circuit
 		{
 			fully_charged &= ~(1 << checking_battery);			// Reset the battery flag
-			PORTB = led1_bar | led2_bar | led3_bar | led4_bar | led5_bar;		// Clear the Bar Leds
 			//PORTB &= ~led3_bar;	// *** Test
 			//_delay_ms(250);		// *** Test
 		}
